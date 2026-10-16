@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, getRelatedArticles } from '@/lib/db/articles';
 import { formatDate } from '@/lib/utils';
+import { siteUrl } from '@/lib/config';
 import CommentsSection from '@/components/comments-section';
 
 interface ArticlePageProps {
@@ -56,7 +57,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
         </div>
         <img src={article.featuredImage} alt={article.title} className="h-[28rem] w-full rounded-3xl object-cover" />
-        <div className="prose max-w-none dark:prose-invert">{article.content}</div>
+        <div className="prose max-w-none dark:prose-invert">
+          {article.content.split(/\n{2,}/).filter(Boolean).map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
+        </div>
       </article>
 
       <div className="grid gap-8 xl:grid-cols-[2fr_1fr]">
@@ -65,8 +70,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div>
             <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Share this story</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`https://clarionfeature.example.com/articles/${article.slug}`)}`} className="btn-secondary">Twitter</Link>
-              <Link href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://clarionfeature.example.com/articles/${article.slug}`)}`} className="btn-secondary">Facebook</Link>
+              <Link href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`${siteUrl}/articles/${article.slug}`)}`} className="btn-secondary" target="_blank" rel="noopener noreferrer">X / Twitter</Link>
+              <Link href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${siteUrl}/articles/${article.slug}`)}`} className="btn-secondary" target="_blank" rel="noopener noreferrer">Facebook</Link>
             </div>
           </div>
           <div>

@@ -15,11 +15,13 @@ export default function AdminMediaPage() {
     }
     const uploadData = new FormData();
     uploadData.append('file', file);
-    const response = await fetch('/api/upload-image', { method: 'POST', body: uploadData });
-    if (response.ok) {
-      setStatus('Upload complete.');
-    } else {
-      setStatus('Upload failed.');
+    setStatus('Uploading…');
+    try {
+      const response = await fetch('/api/upload-image', { method: 'POST', body: uploadData });
+      const data = await response.json().catch(() => ({}));
+      setStatus(response.ok ? `Upload complete: ${data.url}` : data.error || 'Upload failed.');
+    } catch {
+      setStatus('Upload failed. Check your connection and try again.');
     }
   };
 

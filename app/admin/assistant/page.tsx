@@ -25,7 +25,7 @@ export default function AdminAssistantPage() {
         body: JSON.stringify({ task, text: input }),
       });
       const data = await response.json();
-      setOutput(data.result || 'No result available.');
+      setOutput(data.result || data.error || 'No result available.');
     } catch (error) {
       setOutput('AI assistant failed.');
     } finally {

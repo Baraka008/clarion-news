@@ -8,27 +8,31 @@ export default function AuthButton() {
   const [user, setUser] = useState<null | { displayName: string | null }>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
+    if (!firebaseAuth) return;
+    return onAuthStateChanged(firebaseAuth, (currentUser) => {
       setUser(currentUser ? { displayName: currentUser.displayName } : null);
     });
-    return unsubscribe;
   }, []);
 
+  if (!firebaseAuth) {
+    return (
+      <span className="rounded-full bg-amber-100 px-3 py-2 text-xs font-semibold text-amber-900 dark:bg-amber-500/20 dark:text-amber-200" title="Sign-in turns on once Firebase is configured">
+        Demo mode
+      </span>
+    );
+  }
+
+  const auth = firebaseAuth;
   const handleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(firebaseAuth, provider);
+      await signInWithPopup(auth, new GoogleAuthProvider());
     } catch (error) {
       console.error('Sign in failed', error);
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut(firebaseAuth);
-  };
-
   return user ? (
-    <button onClick={handleSignOut} className="btn-secondary">
+    <button onClick={() => signOut(auth)} className="btn-secondary">
       Sign out
     </button>
   ) : (

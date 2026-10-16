@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getAdminDb } from '@/lib/server/firebaseAdmin';
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body = await request.json().catch(() => ({}));
   const email = body.email?.toLowerCase()?.trim();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
   }
 
-  const collection = adminDb.collection('NewsletterSubscribers');
-  await collection.doc(email).set({
+  const db = getAdminDb();
+  if (!db) {
+    // Demo mode: accept the sign-up so the form can be tried, but nothing is stored.
+    return NextResponse.json({ success: true, demo: true });
+  }
+
+  await db.collection('NewsletterSubscribers').doc(email).set({
     email,
     subscribedAt: new Date().toISOString(),
   });

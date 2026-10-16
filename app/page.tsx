@@ -4,6 +4,7 @@ import { getHomePreviewData } from '@/lib/db/articles';
 import ArticleCard from '@/components/article-card';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import NewsletterForm from '@/components/newsletter-form';
 
 export default async function HomePage() {
   const { hero, topStories, trending, latest, categories } = await getHomePreviewData();
@@ -11,12 +12,12 @@ export default async function HomePage() {
   return (
     <section className="space-y-10 py-8">
       <div className="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
-        <article className="group relative overflow-hidden rounded-3xl bg-slate-950 text-white shadow-soft">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/10 to-slate-950" />
-          <img src={hero.featuredImage} alt={hero.title} className="h-96 w-full object-cover transition duration-500 group-hover:scale-105" />
-          <div className="absolute inset-x-0 bottom-0 p-8">
-            <p className="mb-3 inline-flex rounded-full bg-accent px-4 py-2 text-xs uppercase tracking-[0.25em] text-white">Breaking</p>
-            <h1 className="text-4xl font-semibold leading-tight">{hero.title}</h1>
+        <article className="group relative flex min-h-[28rem] flex-col justify-end overflow-hidden rounded-3xl bg-slate-950 text-white shadow-soft">
+          <img src={hero.featuredImage} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/30 to-slate-950" />
+          <div className="relative p-6 pt-32 sm:p-8 sm:pt-40">
+            <p className="mb-3 inline-flex rounded-full bg-accent px-4 py-2 text-xs uppercase tracking-[0.25em] text-white">Top story</p>
+            <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">{hero.title}</h1>
             <p className="mt-4 max-w-2xl text-sm text-slate-200">{hero.summary}</p>
             <div className="mt-8 flex flex-wrap gap-3 text-xs text-slate-300">
               <span>{hero.category}</span>
@@ -71,6 +72,7 @@ export default async function HomePage() {
               <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{category.description}</p>
             </Link>
           ))}
+          <NewsletterForm />
         </div>
       </section>
     </section>

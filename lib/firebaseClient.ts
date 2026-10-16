@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { isFirebaseClientConfigured } from '@/lib/config';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,14 +13,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-function getAppInstance(): FirebaseApp {
-  if (!getApps().length) {
-    return initializeApp(firebaseConfig);
-  }
-  return getApp();
-}
+// These are null in demo mode; every caller checks before using them.
+const app: FirebaseApp | null = isFirebaseClientConfigured ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : null;
 
-const app = getAppInstance();
-export const firebaseAuth = getAuth(app);
-export const firebaseDb = getFirestore(app);
-export const firebaseStorage = getStorage(app);
+export const firebaseAuth = app ? getAuth(app) : null;
+export const firebaseDb = app ? getFirestore(app) : null;
+export const firebaseStorage = app ? getStorage(app) : null;

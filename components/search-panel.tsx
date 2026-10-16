@@ -19,10 +19,15 @@ export default function SearchPanel({ categories }: { categories: Array<{ id: st
     if (category) searchParams.set('category', category);
     if (fromDate) searchParams.set('from', fromDate);
     if (toDate) searchParams.set('to', toDate);
-    const response = await fetch(`/api/search?${searchParams.toString()}`);
-    const data = await response.json();
-    setResults(data.results || []);
-    setLoading(false);
+    try {
+      const response = await fetch(`/api/search?${searchParams.toString()}`);
+      const data = await response.json();
+      setResults(data.results || []);
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
