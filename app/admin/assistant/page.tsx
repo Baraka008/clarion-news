@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getFirebaseClient } from '@/lib/firebaseClient';
 
 const tasks = [
   { id: 'summarize', label: 'Summarize article' },
@@ -19,15 +20,19 @@ export default function AdminAssistantPage() {
     setLoading(true);
     setOutput('');
     try {
+      const currentUser = getFirebaseClient().auth.currentUser;
+      if (!currentUser) throw new Error('Please sign in again to use the assistant.');
+      const token = await currentUser.getIdToken();
       const response = await fetch('/api/ai/assistant', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ task, text: input }),
       });
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'The assistant request failed.');
       setOutput(data.result || 'No result available.');
     } catch (error) {
-      setOutput('AI assistant failed.');
+      setOutput(error instanceof Error ? error.message : 'AI assistant failed.');
     } finally {
       setLoading(false);
     }
