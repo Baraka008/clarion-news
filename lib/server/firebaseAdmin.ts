@@ -1,19 +1,43 @@
 import admin from 'firebase-admin';
 
-if (!admin.apps.length) {
+/**
+ * Firebase Admin is initialized only when a server request actually needs it.
+ * Keeping initialization lazy prevents Next.js from requiring production
+ * service-account secrets while it is collecting/building route modules.
+ */
+function getAdminApp() {
+  if (admin.apps.length) return admin.app();
+
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-  admin.initializeApp({
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error(
+      'Firebase Admin is not configured. Set NEXT_PUBLIC_FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in the server environment.',
+    );
+  }
+
+  return admin.initializeApp({
     credential: admin.credential.cert({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      projectId,
+      clientEmail,
       privateKey,
     }),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   });
 }
 
-const firebaseAdmin = admin;
-export const adminAuth = firebaseAdmin.auth();
-export const adminDb = firebaseAdmin.firestore();
-export const adminStorage = firebaseAdmin.storage();
+function lazyService<T extends object>(factory: () => T): T {
+  return new Proxy({} as T, {
+    get(_target, property) {
+      const service = factory();
+      const value = Reflect.get(service, property, service);
+      return typeof value === 'function' ? value.bind(service) : value;
+    },
+  });
+}
+
+export const adminAuth = lazyService(() => getAdminApp().auth());
+export const adminDb = lazyService(() => getAdminApp().firestore());
+export const adminStorage = lazyService(() => getAdminApp().storage());

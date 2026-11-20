@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getFirebaseClient } from '@/lib/firebaseClient';
 
 export default function AdminMediaPage() {
   const [status, setStatus] = useState('');
@@ -13,13 +14,22 @@ export default function AdminMediaPage() {
       setStatus('Please select an image file.');
       return;
     }
-    const uploadData = new FormData();
-    uploadData.append('file', file);
-    const response = await fetch('/api/upload-image', { method: 'POST', body: uploadData });
-    if (response.ok) {
-      setStatus('Upload complete.');
-    } else {
-      setStatus('Upload failed.');
+    try {
+      const currentUser = getFirebaseClient().auth.currentUser;
+      if (!currentUser) throw new Error('Please sign in again before uploading.');
+      const token = await currentUser.getIdToken();
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: uploadData,
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Upload failed.');
+      setStatus(`Upload complete: ${result.url}`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Upload failed.');
     }
   };
 
