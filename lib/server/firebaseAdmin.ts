@@ -20,9 +20,9 @@ function getAdminApp() {
 
   return admin.initializeApp({
     credential: admin.credential.cert({
-      project_id: projectId,
-      client_email: clientEmail,
-      private_key: privateKey,
+      projectId,
+      clientEmail,
+      privateKey,
     }),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   });
